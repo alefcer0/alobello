@@ -1,0 +1,129 @@
+{
+  "info": {
+    "_postman_id": "nopal-leads-collection",
+    "name": "Nopal Leads API",
+    "description": "Colección para probar el sistema de captura y clasificación de leads desde Meta (Facebook, Instagram, WhatsApp).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Verificación Meta (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/webhook/meta?hub.mode=subscribe&hub.verify_token={{meta_verify_token}}&hub.challenge=CHALLENGE_ACCEPTED",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "meta"],
+          "query": [
+            { "key": "hub.mode", "value": "subscribe" },
+            { "key": "hub.verify_token", "value": "{{meta_verify_token}}" },
+            { "key": "hub.challenge", "value": "CHALLENGE_ACCEPTED" }
+          ]
+        },
+        "description": "Verifica el webhook con Meta Developers. Meta envía este GET al suscribir el webhook; debe devolver el valor de hub.challenge si el token coincide."
+      },
+      "response": []
+    },
+    {
+      "name": "Simular mensaje entrante (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"texto\": \"Hola, ¿cuánto cuesta el kilo de nopal en Puebla? Necesito unos 50 kilos\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/webhook/meta",
+          "host": ["{{base_url}}"],
+          "path": ["webhook", "meta"]
+        },
+        "description": "Simula un mensaje entrante de WhatsApp/Facebook/Instagram sin payload real de Meta. Ejecuta el flujo completo: extracción, clasificación, guardado de lead y respuesta automática si es lead."
+      },
+      "response": []
+    },
+    {
+      "name": "Clasificar texto",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"texto\": \"¿Cuánto el kilo de nopal en Guadalajara? Quiero cotizar 30 kilos\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/classify",
+          "host": ["{{base_url}}"],
+          "path": ["classify"]
+        },
+        "description": "Clasifica un texto libre en lead, proveedor, saludo o spam. Primero aplica reglas por keywords; si no hay match, usa OpenAI."
+      },
+      "response": []
+    },
+    {
+      "name": "Extraer datos",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"texto\": \"Hola, soy de Monterrey, necesito 25 kilos de nopal. Mi cel es 81 1234 5678\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/extract",
+          "host": ["{{base_url}}"],
+          "path": ["extract"]
+        },
+        "description": "Extrae teléfono, cantidad (kilos) y ciudad de un mensaje en español antes de clasificar."
+      },
+      "response": []
+    },
+    {
+      "name": "Enviar respuesta",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\",\n  \"session_id\": null\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/respond",
+          "host": ["{{base_url}}"],
+          "path": ["respond"]
+        },
+        "description": "Genera y envía la respuesta automática vía Meta Graph API según los datos faltantes en la sesión. Requiere tokens de Meta configurados en .env."
+      },
+      "response": []
+    },
+    {
+      "name": "Crear o recuperar sesión",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/session",
+          "host": ["{{base_url}}"],
+          "path": ["session"]
+        },
+        "description": "Crea una sesión nueva o recupera la activa para un sender_id de Meta. Las sesiones expiran tras 48 horas de inactividad."
+      },
+      "response": []
+    }
+  ]
+}
