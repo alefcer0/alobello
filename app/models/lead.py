@@ -4,6 +4,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, Field
 
+from app.constants.common import PLATFORM_PATTERN
+
 
 class ClassifyRequest(BaseModel):
     texto: str
@@ -18,6 +20,7 @@ class ExtractRequest(BaseModel):
 
 
 class ExtractResponse(BaseModel):
+    nombre: Optional[str] = None
     telefono: Optional[str] = None
     cantidad: Optional[str] = None
     ciudad: Optional[str] = None
@@ -25,9 +28,14 @@ class ExtractResponse(BaseModel):
 
 class RespondRequest(BaseModel):
     sender_id: str
-    plataforma: str = Field(..., pattern="^(facebook|instagram|whatsapp)$")
+    plataforma: str = Field(..., pattern=PLATFORM_PATTERN)
     texto: Optional[str] = None
     session_id: Optional[UUID] = None
+    conversation_id: Optional[UUID] = None
+
+    @property
+    def context_id(self) -> Optional[UUID]:
+        return self.conversation_id or self.session_id
 
 
 class RespondResponse(BaseModel):

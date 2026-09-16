@@ -1,129 +1,319 @@
-{
+﻿{
   "info": {
     "_postman_id": "nopal-leads-collection",
     "name": "Nopal Leads API",
-    "description": "Colección para probar el sistema de captura y clasificación de leads desde Meta (Facebook, Instagram, WhatsApp).",
+    "description": "Coleccion organizada por categorias funcionales para validar disponibilidad, autenticacion, operacion interna y flujo de webhook.\n\nVariables requeridas:\n- base_url\n- meta_verify_token\n- test_sender_id\n- test_platform\n- superuser_username\n- superuser_password\n- access_token",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "Verificación Meta (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{base_url}}/webhook/meta?hub.mode=subscribe&hub.verify_token={{meta_verify_token}}&hub.challenge=CHALLENGE_ACCEPTED",
-          "host": ["{{base_url}}"],
-          "path": ["webhook", "meta"],
-          "query": [
-            { "key": "hub.mode", "value": "subscribe" },
-            { "key": "hub.verify_token", "value": "{{meta_verify_token}}" },
-            { "key": "hub.challenge", "value": "CHALLENGE_ACCEPTED" }
+      "name": "00 - Publico y Setup",
+      "description": "Endpoints publicos para validar disponibilidad y verificacion oficial del webhook con Meta.",
+      "item": [
+        {
+          "name": "00 - Health check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/health",
+            "description": "Funcionalidad:\nValida disponibilidad de la API.\n\nFuncionamiento:\n- Ejecuta un GET sin autenticacion.\n- Confirma que el servicio este levantado antes de probar flujos.\n\nRespuesta esperada:\n- 200 con {\"status\":\"ok\"}."
+          },
+          "response": [
+            {
+              "name": "OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\"\n}"
+            }
           ]
         },
-        "description": "Verifica el webhook con Meta Developers. Meta envía este GET al suscribir el webhook; debe devolver el valor de hub.challenge si el token coincide."
-      },
-      "response": []
+        {
+          "name": "01 - Verificacion Meta (GET)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/webhook/meta?hub.mode=subscribe&hub.verify_token={{meta_verify_token}}&hub.challenge=1234567890",
+              "host": ["{{base_url}}"],
+              "path": ["webhook", "meta"],
+              "query": [
+                { "key": "hub.mode", "value": "subscribe" },
+                { "key": "hub.verify_token", "value": "{{meta_verify_token}}" },
+                { "key": "hub.challenge", "value": "1234567890", "description": "Meta envia un numero; debe devolverse igual" }
+              ]
+            },
+            "description": "Funcionalidad:\nConfirma la suscripcion de Meta al webhook.\n\nFuncionamiento:\n- Recibe hub.mode, hub.verify_token y hub.challenge.\n- Si el token coincide con META_VERIFY_TOKEN del backend, devuelve el challenge en texto plano.\n\nErrores comunes:\n- 403 cuando el verify token no coincide."
+          },
+          "response": [
+            {
+              "name": "Verificacion exitosa",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "text/plain; charset=utf-8" }],
+              "body": "1234567890"
+            },
+            {
+              "name": "Token incorrecto",
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"detail\": \"Verification failed\"\n}"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Simular mensaje entrante (POST)",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"texto\": \"Hola, ¿cuánto cuesta el kilo de nopal en Puebla? Necesito unos 50 kilos\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/webhook/meta",
-          "host": ["{{base_url}}"],
-          "path": ["webhook", "meta"]
-        },
-        "description": "Simula un mensaje entrante de WhatsApp/Facebook/Instagram sin payload real de Meta. Ejecuta el flujo completo: extracción, clasificación, guardado de lead y respuesta automática si es lead."
-      },
-      "response": []
+      "name": "01 - Autenticacion",
+      "description": "Endpoints para inicio de sesion operativo y gestion del Bearer token JWT.",
+      "item": [
+        {
+          "name": "00.1 - Auth login (JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Login returns JWT\", function () {",
+                  "  pm.response.to.have.status(200);",
+                  "  var body = pm.response.json();",
+                  "  pm.expect(body).to.have.property(\"access_token\");",
+                  "  pm.environment.set(\"access_token\", body.access_token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{superuser_username}}\",\n  \"password\": \"{{superuser_password}}\"\n}"
+            },
+            "url": "{{base_url}}/auth/login",
+            "description": "Funcionalidad:\nAutentica al superusuario y devuelve un JWT para endpoints protegidos.\n\nFuncionamiento:\n- Lee credenciales desde variables del environment.\n- Si son validas retorna access_token con expiracion.\n- El test script guarda access_token automaticamente.\n\nErrores comunes:\n- 401 por credenciales invalidas."
+          },
+          "response": [
+            {
+              "name": "Login OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"access_token\": \"<jwt>\",\n  \"token_type\": \"bearer\",\n  \"expires_at\": \"2026-09-14T18:00:00Z\",\n  \"expires_in_seconds\": 28800,\n  \"username\": \"admin\",\n  \"is_superuser\": true\n}"
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Clasificar texto",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"texto\": \"¿Cuánto el kilo de nopal en Guadalajara? Quiero cotizar 30 kilos\"\n}"
+      "name": "02 - Operacion Interna (Protegido)",
+      "description": "Endpoints que requieren Authorization: Bearer {{access_token}}.",
+      "item": [
+        {
+          "name": "02 - Crear o recuperar sesion",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+            },
+            "url": "{{base_url}}/session",
+            "description": "Funcionalidad:\nAbre o recupera la sesion activa de un contacto.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- Busca por sender_id + plataforma.\n- Si no existe, crea una nueva sesion y responde created=true."
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{base_url}}/classify",
-          "host": ["{{base_url}}"],
-          "path": ["classify"]
+        {
+          "name": "03 - Extraer datos",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"Hola, soy de Monterrey, necesito 25 kilos de nopal. Mi cel es 81 1234 5678\"\n}"
+            },
+            "url": "{{base_url}}/extract",
+            "description": "Funcionalidad:\nExtrae entidades de negocio desde texto libre.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- No persiste en base de datos.\n- Devuelve null en campos no detectados."
+          },
+          "response": []
         },
-        "description": "Clasifica un texto libre en lead, proveedor, saludo o spam. Primero aplica reglas por keywords; si no hay match, usa OpenAI."
-      },
-      "response": []
+        {
+          "name": "04 - Clasificar texto",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"texto\": \"Cuanto el kilo de nopal en Guadalajara? Quiero cotizar 30 kilos\"\n}"
+            },
+            "url": "{{base_url}}/classify",
+            "description": "Funcionalidad:\nClasifica la intencion del mensaje en categorias operativas.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- Evalua reglas y clasificacion para asignar categoria final.\n- Se usa para enrutar acciones del pipeline."
+          },
+          "response": []
+        },
+        {
+          "name": "08 - Enviar respuesta",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\",\n  \"session_id\": \"PEGAR-SESSION-UUID-AQUI\"\n}"
+            },
+            "url": "{{base_url}}/respond",
+            "description": "Funcionalidad:\nGenera y envia respuesta segun el estado de la sesion.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- Si faltan datos, genera pregunta de seguimiento.\n- Si recibe texto manual, envia ese contenido."
+          },
+          "response": []
+        },
+        {
+          "name": "11 - Gestionar handoff humano",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\",\n  \"locked\": true,\n  \"reason\": \"toma manual por operacion\"\n}"
+            },
+            "url": "{{base_url}}/handoff",
+            "description": "Funcionalidad:\nActiva o libera la atencion humana de una conversacion.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- locked=true bloquea respuestas automaticas (human_locked).\n- locked=false regresa a modo automatico."
+          },
+          "response": []
+        },
+        {
+          "name": "10 - Reporte de leads/ventas",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": {
+              "raw": "{{base_url}}/reports/leads?from_date=2026-01-01T00:00:00Z&to_date=2026-12-31T23:59:59Z&plataforma=facebook&lead_outcome=all&include_interactions=true&max_interactions=20&limit=50&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["reports", "leads"],
+              "query": [
+                { "key": "from_date", "value": "2026-01-01T00:00:00Z" },
+                { "key": "to_date", "value": "2026-12-31T23:59:59Z" },
+                { "key": "plataforma", "value": "facebook" },
+                { "key": "lead_outcome", "value": "all", "description": "all|sale|fallen|discarded|active|unknown" },
+                { "key": "include_interactions", "value": "true" },
+                { "key": "max_interactions", "value": "20" },
+                { "key": "limit", "value": "50" },
+                { "key": "offset", "value": "0" },
+                { "key": "order_status", "value": "confirmed", "description": "draft|collecting|ready_to_confirm|confirmed|cancelled|closed|none", "disabled": true },
+                { "key": "categoria", "value": "lead", "description": "lead|proveedor|saludo|spam|auto_reply|human_reply", "disabled": true },
+                { "key": "sender_id", "value": "28632746049654895", "disabled": true },
+                { "key": "handoff_state", "value": "human_locked", "description": "auto|human_locked", "disabled": true },
+                { "key": "search", "value": "puebla", "description": "Busqueda por sender_id, nombre, telefono, ciudad o tema detectado", "disabled": true }
+              ]
+            },
+            "description": "Funcionalidad:\nGenera reporte consolidado de conversion y actividad por conversacion.\n\nFuncionamiento:\n- Requiere Bearer token valido.\n- Filtra por fechas, plataforma, estado comercial, categoria, handoff y busqueda.\n- Puede incluir detalle de interacciones por conversacion.\n\nCasos de uso:\n- Ventas: lead_outcome=sale o order_status=confirmed.\n- Caidos/descartados: lead_outcome=fallen|discarded."
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "name": "Extraer datos",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"texto\": \"Hola, soy de Monterrey, necesito 25 kilos de nopal. Mi cel es 81 1234 5678\"\n}"
+      "name": "03 - Simulacion de Webhook (Publico)",
+      "description": "Escenarios para probar el flujo de mensajes entrantes sin autenticar, usando payload simulado.",
+      "item": [
+        {
+          "name": "05 - Simular mensaje entrante (webhook)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"texto\": \"Hola, cuanto cuesta el kilo de nopal en Puebla? Necesito unos 50 kilos\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+            },
+            "url": "{{base_url}}/webhook/meta",
+            "description": "Funcionalidad:\nEjecuta el pipeline completo de webhook sobre un mensaje entrante simulado.\n\nFuncionamiento:\n- Endpoint publico para pruebas funcionales.\n- Procesa parseo, deduplicacion, clasificacion, sesion y respuesta.\n- Retorna processed, queued y resultados detallados."
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{base_url}}/extract",
-          "host": ["{{base_url}}"],
-          "path": ["extract"]
+        {
+          "name": "06 - Simular mensaje (solo ciudad)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"texto\": \"cuanto el kilo en Puebla?\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+            },
+            "url": "{{base_url}}/webhook/meta",
+            "description": "Funcionalidad:\nPrueba la primera etapa conversacional con informacion parcial.\n\nFuncionamiento:\n- Envia mensaje con ciudad pero sin cantidad ni telefono.\n- Espera pregunta de seguimiento del bot para completar datos faltantes."
+          },
+          "response": []
         },
-        "description": "Extrae teléfono, cantidad (kilos) y ciudad de un mensaje en español antes de clasificar."
-      },
-      "response": []
+        {
+          "name": "07 - Simular mensaje (kilos + tel)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"texto\": \"Necesito 40 kilos, mi numero es 222 123 4567\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
+            },
+            "url": "{{base_url}}/webhook/meta",
+            "description": "Funcionalidad:\nCompleta el flujo conversacional iniciando con el mismo sender_id.\n\nFuncionamiento:\n- Aporta cantidad y telefono del contacto.\n- El backend consolida los datos en sesion y puede cerrar el lead."
+          },
+          "response": []
+        },
+        {
+          "name": "09 - Simular proveedor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sender_id\": \"987654321\",\n  \"texto\": \"Vendo nopal por mayoreo, distribuyo en Jalisco\",\n  \"plataforma\": \"whatsapp\"\n}"
+            },
+            "url": "{{base_url}}/webhook/meta",
+            "description": "Funcionalidad:\nValida la ruta de proveedor para evitar respuestas automaticas de lead.\n\nFuncionamiento:\n- Simula mensaje de oferta de proveedor.\n- Debe clasificarse como proveedor y no generar cierre comercial de lead."
+          },
+          "response": []
+        }
+      ]
     },
     {
-      "name": "Enviar respuesta",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\",\n  \"session_id\": null\n}"
+      "name": "99 - Enlaces Web",
+      "description": "Accesos rapidos para abrir la interfaz web del dashboard y la documentacion Swagger en navegador.",
+      "item": [
+        {
+          "name": "Dashboard web",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/",
+            "description": "Funcionalidad:\nAbre la pantalla web de autenticacion para entrar al dashboard de reporte.\n\nFuncionamiento:\n- Carga la vista de login.\n- Al autenticar con exito redirige a /dashboard."
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{base_url}}/respond",
-          "host": ["{{base_url}}"],
-          "path": ["respond"]
-        },
-        "description": "Genera y envía la respuesta automática vía Meta Graph API según los datos faltantes en la sesión. Requiere tokens de Meta configurados en .env."
-      },
-      "response": []
-    },
-    {
-      "name": "Crear o recuperar sesión",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"sender_id\": \"{{test_sender_id}}\",\n  \"plataforma\": \"{{test_platform}}\"\n}"
-        },
-        "url": {
-          "raw": "{{base_url}}/session",
-          "host": ["{{base_url}}"],
-          "path": ["session"]
-        },
-        "description": "Crea una sesión nueva o recupera la activa para un sender_id de Meta. Las sesiones expiran tras 48 horas de inactividad."
-      },
-      "response": []
+        {
+          "name": "Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{base_url}}/docs",
+            "description": "Funcionalidad:\nAbre la documentacion interactiva OpenAPI/Swagger.\n\nFuncionamiento:\n- Permite explorar endpoints por categoria.\n- Facilita pruebas manuales desde navegador."
+          },
+          "response": []
+        }
+      ]
     }
   ]
 }

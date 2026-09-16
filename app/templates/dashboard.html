@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nopal Leads | Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+<body data-page="dashboard">
+  <main class="dashboard-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Nopal Leads</p>
+        <h1>Dashboard de reporte</h1>
+      </div>
+      <div class="topbar-actions">
+        <a class="ghost-link" href="/docs" target="_blank" rel="noreferrer">Swagger</a>
+        <button id="logout-button" type="button">Cerrar sesion</button>
+      </div>
+    </header>
+
+    <section class="filters">
+      <div class="filter-item">
+        <label for="sender">Sender (parcial)</label>
+        <input id="sender" type="text" placeholder="Ej. 55123 o cliente_001" />
+      </div>
+      <div class="filter-item">
+        <label for="topic">Tema detectado</label>
+        <input id="topic" type="text" placeholder="Ej. precio de nopal" />
+      </div>
+      <div class="filter-item">
+        <label for="from_date">Desde</label>
+        <input id="from_date" type="datetime-local" />
+      </div>
+      <div class="filter-item">
+        <label for="to_date">Hasta</label>
+        <input id="to_date" type="datetime-local" />
+      </div>
+      <div class="filter-item">
+        <label for="plataforma">Plataforma</label>
+        <select id="plataforma">
+          <option value="">Todas</option>
+          <option value="facebook">facebook</option>
+          <option value="whatsapp">whatsapp</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="only_nopal_sales">Tipo de sesion</label>
+        <select id="only_nopal_sales">
+          <option value="all">Todas</option>
+          <option value="true">Solo venta de nopal</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="sale_data_status">Datos para venta de nopal</label>
+        <select id="sale_data_status">
+          <option value="">Todos</option>
+          <option value="completos">Completos</option>
+          <option value="faltantes">Faltan datos</option>
+          <option value="no_aplica">No aplica</option>
+        </select>
+      </div>
+      <div class="filter-item">
+        <label for="lead_outcome">Resultado comercial</label>
+        <select id="lead_outcome">
+          <option value="all">Todos</option>
+          <option value="sale">Venta cerrada</option>
+          <option value="fallen">Caido</option>
+          <option value="discarded">Descartado</option>
+          <option value="active">Activo</option>
+          <option value="unknown">Sin clasificar</option>
+        </select>
+      </div>
+      <div class="filter-item actions">
+        <button id="apply-filters" type="button">Actualizar</button>
+      </div>
+    </section>
+
+    <section id="stats" class="stats-grid">
+      <article class="stat-card"><p>Conversaciones</p><h2 id="total_conversations">0</h2></article>
+      <article class="stat-card"><p>Ventas</p><h2 id="total_sales">0</h2></article>
+      <article class="stat-card"><p>Caidos</p><h2 id="total_fallen">0</h2></article>
+      <article class="stat-card"><p>Descartados</p><h2 id="total_discarded">0</h2></article>
+      <article class="stat-card"><p>Activos</p><h2 id="total_active">0</h2></article>
+    </section>
+
+    <section class="table-wrap">
+      <div class="table-head">
+        <h3>Sesiones recientes</h3>
+        <p id="report-meta">Sin datos</p>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Detalle</th>
+              <th>Sender</th>
+              <th>Plataforma</th>
+              <th>Tema detectado</th>
+              <th>Tipo de sesion</th>
+              <th>Datos de venta</th>
+              <th>Estado de sesion</th>
+              <th>Ultimo mensaje</th>
+            </tr>
+          </thead>
+          <tbody id="report-rows"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button id="prev-page" type="button">Anterior</button>
+        <span id="page-label">Pagina 1</span>
+        <button id="next-page" type="button">Siguiente</button>
+      </div>
+
+      <details id="conversation-details" class="details-panel">
+        <summary>Interacciones de la conversacion seleccionada</summary>
+        <div class="details-body">
+          <p id="details-meta" class="subtitle">Selecciona una conversacion para ver mensajes.</p>
+          <ul id="interaction-list" class="interaction-list"></ul>
+        </div>
+      </details>
+      <p id="dashboard-error" class="error" role="alert" aria-live="polite"></p>
+    </section>
+  </main>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

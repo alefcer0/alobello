@@ -1,0 +1,7 @@
+ok
+r1=
+{"status":"ok","processed":1,"results":[{"lead_id":"b1d0bbd5-8077-4cf6-b2e4-d44b9692399f","message_id":"b1d0bbd5-8077-4cf6-b2e4-d44b9692399f","session_id":"0846f6cf-44e6-40c3-bbd8-f2d01ac74d0f","conversation_id":"0846f6cf-44e6-40c3-bbd8-f2d01ac74d0f","order_id":"41798bc5-a05c-4a4f-b4f9-bd1885b94720","tipo":"lead","extraido":{"nombre":"Lalo","telefono":"+522441301900","cantidad":"2 tonelada","ciudad":"Puebla"},"respuesta_enviada":false,"respuesta":"¡Listo! En un momento te contactamos."}]}
+r2=
+{"status":"ok","processed":1,"results":[{"lead_id":"f2231159-7e87-45ee-b094-4b13d944c732","message_id":"f2231159-7e87-45ee-b094-4b13d944c732","session_id":"0846f6cf-44e6-40c3-bbd8-f2d01ac74d0f","conversation_id":"0846f6cf-44e6-40c3-bbd8-f2d01ac74d0f","order_id":"41798bc5-a05c-4a4f-b4f9-bd1885b94720","tipo":"lead","extraido":{"nombre":"Lalo","telefono":"+522441301900","cantidad":"2 tonelada","ciudad":"Puebla"},"respuesta_enviada":false,"respuesta":"Entendido, dejamos cancelada esta solicitud."}]}
+db=
+cancelled|2 tonelada|2.000|tonelada

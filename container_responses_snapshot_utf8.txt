@@ -1,0 +1,46 @@
+﻿GREETING_RESPONSE = (
+    "Hola, ┬┐en qu├⌐ te podemos ayudar? "
+    "D├⌐jame tu nombre, tel├⌐fono y lugar (ciudad o c├│digo postal)."
+)
+
+ORDER_CONFIRMED_RESPONSE = "Perfecto, tu pedido qued├│ confirmado. En un momento te contactamos."
+ORDER_CANCELLED_RESPONSE = "Entendido, dejamos cancelada esta solicitud."
+REPEATED_GREETING_RESPONSE = "Hola :)"
+
+GREETING_WITH_HISTORY_TEMPLATE = (
+    "Hola {name}, ┬┐vas a querer otra vez {quantity} para {city} "
+    "o quieres cambiar algo esta vez?"
+)
+GREETING_WITH_NAME_TEMPLATE = (
+    "Hola {name}, ┬┐en qu├⌐ te podemos ayudar hoy? "
+    "D├⌐jame tu cantidad aproximada y tu lugar."
+)
+GREETING_WITH_HISTORY_NO_NAME_TEMPLATE = (
+    "Hola, ┬┐vas a querer otra vez {quantity} para {city} "
+    "o quieres cambiar algo esta vez?"
+)
+
+ORDER_CONFIRMATION_PROMPT_WITH_SUMMARY = "Antes de cerrar, ┬┐confirmas tu pedido de {summary}?"
+ORDER_CONFIRMATION_PROMPT_DEFAULT = "Antes de cerrar, ┬┐confirmas tu pedido?"
+
+ORDER_CHANGE_WITH_SUMMARY_TEMPLATE = (
+    "Entendido, entonces quieres cambiar {changes} en tu pedido. "
+    "┬┐Te confirmo {summary}?"
+)
+ORDER_CHANGE_DEFAULT_TEMPLATE = "Entendido, entonces quieres cambiar {changes} en tu pedido."
+
+FALLBACK_HELLO_RESPONSE = "┬íHola! ┬┐En qu├⌐ te podemos ayudar con nopal?"
+
+MISSING_FIELD_LABELS = {
+    "nombre": "tu nombre",
+    "telefono": "tu tel├⌐fono",
+    "ciudad": "tu lugar (ciudad o c├│digo postal)",
+    "cantidad": "la cantidad aproximada (en kilos)",
+}
+MISSING_FIELDS_PROMPT_TEMPLATE = "Te falt├│ decirme {pending}."
+READY_RESPONSE = "┬íListo! En un momento te contactamos."
+
+HUMAN_JOIN_AND = " y "
+HUMAN_JOIN_SEPARATOR = ", "
+
+DEFAULT_MISSING_FIELDS: list[str] = ["nombre", "cantidad", "ciudad", "telefono"]

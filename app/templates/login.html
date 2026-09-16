@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nopal Leads | Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+<body data-page="login">
+  <main class="auth-shell">
+    <section class="auth-card">
+      <p class="eyebrow">Nopal Leads</p>
+      <h1>Acceso al dashboard</h1>
+      <p class="subtitle">Inicia sesion con el superusuario configurado en el servidor.</p>
+
+      <form id="login-form" class="auth-form">
+        <label for="username">Usuario</label>
+        <input id="username" name="username" type="text" autocomplete="username" required />
+
+        <label for="password">Contrasena</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required />
+
+        <button id="login-button" type="submit">Entrar</button>
+        <p id="login-error" class="error" role="alert" aria-live="polite"></p>
+      </form>
+
+      <p class="hint">Tip: despues de autenticarte se guarda el token en sessionStorage.</p>
+    </section>
+  </main>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

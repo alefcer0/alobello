@@ -1,0 +1,2 @@
+SETTINGS_ENV_FILE = ".env"
+SETTINGS_EXTRA_IGNORE = "ignore"

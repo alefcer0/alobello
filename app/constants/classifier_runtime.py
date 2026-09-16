@@ -1,0 +1,31 @@
+OPENAI_PLACEHOLDER_PREFIX = "sk-your"
+OPENAI_EMPTY_KEY = "sk-"
+OPENAI_FALLBACK_CATEGORY = "consulta"
+OPENAI_ORDER_FALLBACK_INTENT = "none"
+OPENAI_CLASSIFICATION_MAX_TOKENS = 10
+OPENAI_ORDER_INTENT_MAX_TOKENS = 8
+OPENAI_TOPIC_MAX_TOKENS = 20
+OPENAI_TEMPERATURE = 0
+OPENAI_USER_ROLE = "user"
+
+LOG_RULE_SPAM_TEMPLATE = "Rule match: spam/negative (keyword=%s)"
+LOG_RULE_SALUDO_TEMPLATE = "Rule match: saludo (keyword=%s)"
+LOG_RULE_PROVEEDOR_TEMPLATE = "Rule match: proveedor (keyword=%s)"
+LOG_RULE_LEAD_STRONG_TEMPLATE = "Rule match: lead strong (keyword=%s)"
+LOG_RULE_LEAD_PRODUCT_INTENT = "Rule match: lead (producto + intención de compra)"
+LOG_RULE_SPAM_OFFTOPIC_TEMPLATE = "Rule match: spam off-topic (hint=%s)"
+LOG_OPENAI_NOT_CONFIGURED_CLASSIFICATION = "OpenAI not configured, defaulting to consulta"
+LOG_OPENAI_CLASSIFICATION_CALL_TEMPLATE = "No rule match, calling OpenAI (%s) for classification"
+LOG_OPENAI_INVALID_CATEGORY_TEMPLATE = "OpenAI returned invalid category '%s', defaulting to consulta"
+LOG_OPENAI_CLASSIFICATION_RESULT_TEMPLATE = "OpenAI classification: %s"
+LOG_OPENAI_RATE_LIMIT_TEMPLATE = "OpenAI rate limit / quota exceeded: %s"
+LOG_OPENAI_API_ERROR_TEMPLATE = "OpenAI API error: %s"
+LOG_OPENAI_UNEXPECTED_ERROR_TEMPLATE = "OpenAI unexpected error: %s"
+LOG_OPENAI_TOPIC_CALL_TEMPLATE = "Calling OpenAI (%s) for topic summary"
+LOG_OPENAI_TOPIC_RESULT_TEMPLATE = "OpenAI topic summary: %s"
+LOG_OPENAI_TOPIC_ERROR_TEMPLATE = "OpenAI topic summary error: %s"
+LOG_OPENAI_ORDER_INTENT_CALL = "No local order-intent match, calling OpenAI for intent disambiguation"
+LOG_OPENAI_ORDER_RATE_LIMIT_TEMPLATE = "OpenAI order-intent rate limit: %s"
+LOG_OPENAI_ORDER_API_ERROR_TEMPLATE = "OpenAI order-intent API error: %s"
+LOG_OPENAI_ORDER_UNEXPECTED_ERROR_TEMPLATE = "OpenAI order-intent unexpected error: %s"
+LOG_CLASSIFY_MESSAGE_LEN_TEMPLATE = "Classifying message (len=%d)"

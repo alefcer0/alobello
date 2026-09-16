@@ -1,0 +1,9 @@
+HANDOFF_STATE_AUTO = "auto"
+HANDOFF_STATE_HUMAN_LOCKED = "human_locked"
+
+HANDOFF_SOURCE_MANUAL = "manual"
+HANDOFF_SOURCE_AUTO = "auto_detected"
+
+ACTIVE_HANDOFF_STATES: tuple[str, ...] = (
+    HANDOFF_STATE_HUMAN_LOCKED,
+)

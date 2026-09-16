@@ -1,0 +1,36 @@
+SIMULATED_ENTRY_SENDER_KEY = "sender_id"
+SIMULATED_ENTRY_TEXT_KEY = "texto"
+SIMULATED_ENTRY_PLATFORM_KEY = "plataforma"
+SIMULATED_FLAG_KEY = "simulated"
+ENTRY_KEY = "entry"
+RESULT_KEY_PROCESSED = "processed"
+RESULT_KEY_QUEUED = "queued"
+RESULT_KEY_RESULTS = "results"
+DEFAULT_SIMULATED_PLATFORM = "whatsapp"
+
+WEBHOOK_OBJECT_PAGE = "page"
+WEBHOOK_OBJECT_INSTAGRAM = "instagram"
+WEBHOOK_OBJECT_WABA = "whatsapp_business_account"
+
+WEBHOOK_FIELD_MESSAGES = "messages"
+WEBHOOK_FIELD_COMMENTS = "comments"
+WEBHOOK_FIELD_FEED = "feed"
+
+SIGNATURE_HEADER_NAME = "x-hub-signature-256"
+SIGNATURE_PREFIX = "sha256="
+
+SIMULATED_PAGE_ID = "PAGE_ID"
+SIMULATED_WABA_ID = "WABA_ID"
+SIMULATED_CLIENT_NAME = "Cliente Prueba"
+SIMULATED_WAMID_TEMPLATE = "wamid.sim_{sender_id}_{text_hash}_{nonce_ms}"
+SIMULATED_MID_TEMPLATE = "mid.sim_{sender_id}_{text_hash}_{nonce_ms}"
+
+MESSAGING_PRODUCT_WHATSAPP = "whatsapp"
+MESSAGE_TYPE_TEXT = "text"
+MESSAGE_TIMESTAMP_FALLBACK = "na"
+
+ERROR_INVALID_JSON = "Invalid JSON"
+ERROR_INVALID_SIGNATURE = "Invalid signature"
+ERROR_VERIFICATION_FAILED = "Verification failed"
+
+STATUS_OK = "ok"

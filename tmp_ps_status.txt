@@ -1,0 +1,3 @@
+﻿NAME             IMAGE          COMMAND                  SERVICE   CREATED          STATUS                 PORTS
+alobello-api-1   alobello-api   "uvicorn app.main:apΓÇª"   api       14 minutes ago   Up 13 minutes          0.0.0.0:8000->8000/tcp, [::]:8000->8000/tcp
+alobello-db-1    postgres:15    "docker-entrypoint.sΓÇª"   db        4 hours ago      Up 4 hours (healthy)   0.0.0.0:5433->5432/tcp, [::]:5433->5432/tcp

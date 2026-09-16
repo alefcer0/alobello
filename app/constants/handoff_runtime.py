@@ -1,0 +1,5 @@
+LOG_HANDOFF_LOCK_TEMPLATE = "Conversation %s locked for bot (source=%s)"
+LOG_HANDOFF_UNLOCK_TEMPLATE = "Conversation %s unlocked for bot"
+LOG_HANDOFF_AUTO_EXPIRED_TEMPLATE = "Bot lock expired by inactivity for conversation %s"
+LOG_HANDOFF_SKIP_RESPONSE_TEMPLATE = "Skipping auto-response due to handoff lock in conversation %s"
+LOG_HANDOFF_MARK_INTERVENTION_TEMPLATE = "Detected human/page intervention for sender=%s platform=%s"

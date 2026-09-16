@@ -1,0 +1,130 @@
+﻿api-1  | INFO:     Started server process [1]
+api-1  | INFO:     Waiting for application startup.
+api-1  | 2026-09-14 04:24:04,834 | INFO | app.main | Starting Nopal Leads API
+api-1  | 2026-09-14 04:24:04,881 | INFO | app.db.connection | Database pool initialized
+api-1  | INFO:     Application startup complete.
+api-1  | INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+api-1  | INFO:     172.26.0.1:44566 - "GET /health HTTP/1.1" 200 OK
+api-1  | INFO:     172.26.0.1:39446 - "GET /health HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:26:13,012 | INFO | app.services.meta_webhook | Parsed 1 messages from webhook payload
+api-1  | 2026-09-14 04:26:13,015 | INFO | app.services.message_buffer | Buffered event m_QGYSG4JO0d5t4IVmgO-BcQJ9y4GET9BQSmbp0iuoEUQFk5RouYIjpMzxcgL6_q1wAqqsugACboA0QBnLYNghuw in facebook:28632746049654895 (1/5)
+api-1  | 2026-09-14 04:26:13,015 | INFO | app.routes.webhook | Buffered inbound event: m_QGYSG4JO0d5t4IVmgO-BcQJ9y4GET9BQSmbp0iuoEUQFk5RouYIjpMzxcgL6_q1wAqqsugACboA0QBnLYNghuw
+api-1  | INFO:     172.26.0.1:57516 - "POST /webhook/meta HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:26:14,515 | INFO | app.services.message_buffer | Flushing buffer facebook:28632746049654895 (reason=inactivity_window, events=1)
+api-1  | 2026-09-14 04:26:14,515 | INFO | app.services.pipeline | Processing message from 28632746049654895 [facebook]: hola
+api-1  | 2026-09-14 04:26:14,516 | INFO | app.services.session_manager | Getting or creating session for sender=28632746049654895 platform=facebook
+api-1  | 2026-09-14 04:26:14,531 | INFO | app.services.session_manager | New conversation created: d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:26:14,537 | INFO | app.services.classifier | No local order-intent match, calling OpenAI for intent disambiguation
+api-1  | 2026-09-14 04:26:15,539 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:15,550 | INFO | app.services.classifier | Rule match: saludo (keyword=hola)
+api-1  | 2026-09-14 04:26:15,550 | INFO | app.services.extractor | Extracting data from text (len=4)
+api-1  | 2026-09-14 04:26:15,550 | INFO | app.services.extractor | Extraction result: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:26:15,552 | INFO | app.services.session_manager | Message saved: 09901a62-45bc-48c4-bbdc-52783c42ea69 (direction=inbound categoria=saludo)
+api-1  | 2026-09-14 04:26:15,554 | INFO | app.services.responder | Sending message to 28632746049654895 via facebook
+api-1  | 2026-09-14 04:26:16,041 | INFO | httpx | HTTP Request: POST https://graph.facebook.com/v21.0/me/messages?access_token=EAAPcDWln4jwBSeMUn3CDVuXvlwVkTPLz3iFsG9pJIfuGMi1P9aml6ZChjUp85eJvfGRfv5R6ZAFRKRHXOr8gwljOtAva110WZBCoGRlZBA6EuWB60FZA1XXYx0QKnM154LMepuC86QTdP2cGXaeL8wynXUcYDfZCnH4jrcaZCk1sA9PqF6JNceq50Ic3fgRD9kad08b5jcrhwZDZD "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:16,042 | INFO | app.services.bot_outbound_tracker | Tracked outbound bot event: m_hF70yX46UpPk0QmVwdv3WwJ9y4GET9BQSmbp0iuoEUSgaYJNGLRc8OG187MpH79VeSs_4EIqlKFLizocuBU8lw
+api-1  | 2026-09-14 04:26:16,042 | INFO | app.services.responder | Messenger message sent to 28632746049654895
+api-1  | 2026-09-14 04:26:16,042 | INFO | app.services.responder | Response generated: 'Hola, ┬┐en qu├⌐ te podemos ayudar? D├⌐jame tu nombre, tel├⌐fono y lugar (ciudad o c├│' (sent=True)
+api-1  | 2026-09-14 04:26:16,044 | INFO | app.services.session_manager | Message saved: 58bba88c-bbdd-4f63-b5bd-80446b14580c (direction=outbound categoria=auto_reply)
+api-1  | 2026-09-14 04:26:16,044 | INFO | app.services.pipeline | Pipeline complete: {'lead_id': '09901a62-45bc-48c4-bbdc-52783c42ea69', 'message_id': '09901a62-45bc-48c4-bbdc-52783c42ea69', 'session_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'conversation_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'order_id': None, 'tipo': 'saludo', 'extraido': {'nombre': None, 'telefono': None, 'cantidad': None, 'ciudad': None}, 'respuesta_enviada': True, 'respuesta': 'Hola, ┬┐en qu├⌐ te podemos ayudar? D├⌐jame tu nombre, tel├⌐fono y lugar (ciudad o c├│digo postal).'}
+api-1  | 2026-09-14 04:26:16,045 | INFO | app.services.message_buffer | Flushed buffer facebook:28632746049654895 with 1 event(s)
+api-1  | 2026-09-14 04:26:32,954 | INFO | app.services.meta_webhook | Parsed 1 messages from webhook payload
+api-1  | 2026-09-14 04:26:32,955 | INFO | app.services.message_buffer | Buffered event m_OwS6EX4zqEkyHpvbSj1JzAJ9y4GET9BQSmbp0iuoEUSM6Nhwdv5LsWG8Hncq08rv2SiijXhlMs9bVNQ3YIyGSw in facebook:28632746049654895 (1/5)
+api-1  | 2026-09-14 04:26:32,955 | INFO | app.routes.webhook | Buffered inbound event: m_OwS6EX4zqEkyHpvbSj1JzAJ9y4GET9BQSmbp0iuoEUSM6Nhwdv5LsWG8Hncq08rv2SiijXhlMs9bVNQ3YIyGSw
+api-1  | INFO:     172.26.0.1:33958 - "POST /webhook/meta HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:26:34,456 | INFO | app.services.message_buffer | Flushing buffer facebook:28632746049654895 (reason=inactivity_window, events=1)
+api-1  | 2026-09-14 04:26:34,456 | INFO | app.services.pipeline | Processing message from 28632746049654895 [facebook]: ay que bueno eh
+api-1  | 2026-09-14 04:26:34,456 | INFO | app.services.session_manager | Getting or creating session for sender=28632746049654895 platform=facebook
+api-1  | 2026-09-14 04:26:34,460 | INFO | app.services.session_manager | Active conversation found: d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:26:34,463 | INFO | app.services.classifier | No local order-intent match, calling OpenAI for intent disambiguation
+api-1  | 2026-09-14 04:26:35,061 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:35,072 | INFO | app.services.classifier | No rule match, calling OpenAI (gpt-4o-mini) for classification
+api-1  | 2026-09-14 04:26:36,101 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:36,102 | INFO | app.services.classifier | OpenAI classification: saludo
+api-1  | 2026-09-14 04:26:36,102 | INFO | app.services.extractor | Extracting data from text (len=15)
+api-1  | 2026-09-14 04:26:36,102 | INFO | app.services.extractor | Extraction result: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:26:36,937 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:36,944 | INFO | app.services.extractor | OpenAI extraction merged: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:26:36,944 | INFO | app.services.session_manager | Merging extracted data into conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:26:36,949 | INFO | app.services.session_manager | Merged session data: nombre=None telefono=None cantidad=None ciudad=None (source=respuesta)
+api-1  | 2026-09-14 04:26:36,950 | INFO | app.services.session_manager | Message saved: eb3cce70-c93c-4b07-98b4-9a311c991d15 (direction=inbound categoria=saludo)
+api-1  | 2026-09-14 04:26:36,951 | INFO | app.services.responder | Sending message to 28632746049654895 via facebook
+api-1  | 2026-09-14 04:26:37,480 | INFO | httpx | HTTP Request: POST https://graph.facebook.com/v21.0/me/messages?access_token=EAAPcDWln4jwBSeMUn3CDVuXvlwVkTPLz3iFsG9pJIfuGMi1P9aml6ZChjUp85eJvfGRfv5R6ZAFRKRHXOr8gwljOtAva110WZBCoGRlZBA6EuWB60FZA1XXYx0QKnM154LMepuC86QTdP2cGXaeL8wynXUcYDfZCnH4jrcaZCk1sA9PqF6JNceq50Ic3fgRD9kad08b5jcrhwZDZD "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:26:37,481 | INFO | app.services.bot_outbound_tracker | Tracked outbound bot event: m_9ALZAJ-FhJL07kQg6E3iHQJ9y4GET9BQSmbp0iuoEURAdMtr2Bv2Jq9e73VpfMLBssd4ir4YVUnf8o0PKVu3JA
+api-1  | 2026-09-14 04:26:37,481 | INFO | app.services.responder | Messenger message sent to 28632746049654895
+api-1  | 2026-09-14 04:26:37,481 | INFO | app.services.responder | Response generated: 'Hola :)' (sent=True)
+api-1  | 2026-09-14 04:26:37,482 | INFO | app.services.session_manager | Message saved: c067ecb1-13b3-4fc3-b8a6-acd171ae8f51 (direction=outbound categoria=auto_reply)
+api-1  | 2026-09-14 04:26:37,483 | INFO | app.services.pipeline | Pipeline complete: {'lead_id': 'eb3cce70-c93c-4b07-98b4-9a311c991d15', 'message_id': 'eb3cce70-c93c-4b07-98b4-9a311c991d15', 'session_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'conversation_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'order_id': None, 'tipo': 'saludo', 'extraido': {'nombre': None, 'telefono': None, 'cantidad': None, 'ciudad': None}, 'respuesta_enviada': True, 'respuesta': 'Hola :)'}
+api-1  | 2026-09-14 04:26:37,483 | INFO | app.services.message_buffer | Flushed buffer facebook:28632746049654895 with 1 event(s)
+api-1  | 2026-09-14 04:29:06,645 | INFO | app.routes.internal | POST /handoff for sender=28632746049654895 locked=True
+api-1  | 2026-09-14 04:29:06,648 | INFO | app.services.session_manager | Conversation d2e0ce25-4561-40c1-a850-19d350be8492 locked for bot (source=manual_operator_lock)
+api-1  | INFO:     172.26.0.1:53904 - "POST /handoff HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:32:08,400 | INFO | app.routes.internal | POST /handoff for sender=28632746049654895 locked=True
+api-1  | 2026-09-14 04:32:08,408 | INFO | app.services.session_manager | Conversation d2e0ce25-4561-40c1-a850-19d350be8492 locked for bot (source=manual_operator_lock)
+api-1  | INFO:     172.26.0.1:35460 - "POST /handoff HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:32:13,712 | INFO | app.routes.internal | POST /handoff for sender=28632746049654895 locked=True
+api-1  | 2026-09-14 04:32:13,715 | INFO | app.services.session_manager | Conversation d2e0ce25-4561-40c1-a850-19d350be8492 locked for bot (source=manual_operator_lock)
+api-1  | INFO:     172.26.0.1:35476 - "POST /handoff HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:34:13,504 | INFO | app.services.meta_webhook | Parsed 1 messages from webhook payload
+api-1  | 2026-09-14 04:34:13,505 | INFO | app.services.message_buffer | Buffered event m_z9gXbnPMq3Kj77q2yViS1gJ9y4GET9BQSmbp0iuoEURZolCdwVMjhdko1_RpsBi2BtXh-uO_xjdBGlRnauVi5A in facebook:28632746049654895 (1/5)
+api-1  | 2026-09-14 04:34:13,505 | INFO | app.routes.webhook | Buffered inbound event: m_z9gXbnPMq3Kj77q2yViS1gJ9y4GET9BQSmbp0iuoEURZolCdwVMjhdko1_RpsBi2BtXh-uO_xjdBGlRnauVi5A
+api-1  | INFO:     172.26.0.1:40080 - "POST /webhook/meta HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:34:15,005 | INFO | app.services.message_buffer | Flushing buffer facebook:28632746049654895 (reason=inactivity_window, events=1)
+api-1  | 2026-09-14 04:34:15,005 | INFO | app.services.pipeline | Processing message from 28632746049654895 [facebook]: cliente prueba 1
+api-1  | 2026-09-14 04:34:15,006 | INFO | app.services.session_manager | Getting or creating session for sender=28632746049654895 platform=facebook
+api-1  | 2026-09-14 04:34:15,010 | INFO | app.services.session_manager | Active conversation found: d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:15,013 | INFO | app.services.classifier | No local order-intent match, calling OpenAI for intent disambiguation
+api-1  | 2026-09-14 04:34:15,893 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:15,894 | INFO | app.services.classifier | No rule match, calling OpenAI (gpt-4o-mini) for classification
+api-1  | 2026-09-14 04:34:17,135 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:17,136 | INFO | app.services.classifier | OpenAI classification: spam
+api-1  | 2026-09-14 04:34:17,136 | INFO | app.services.extractor | Extracting data from text (len=16)
+api-1  | 2026-09-14 04:34:17,136 | INFO | app.services.extractor | Extraction result: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:34:18,643 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:18,643 | INFO | app.services.extractor | OpenAI extraction merged: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:34:18,644 | INFO | app.services.session_manager | Merging extracted data into conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:18,646 | INFO | app.services.session_manager | Merged session data: nombre=None telefono=None cantidad=None ciudad=None (source=respuesta)
+api-1  | 2026-09-14 04:34:18,648 | INFO | app.services.session_manager | Message saved: 19881d16-33a6-4381-8cad-44bab71b08af (direction=inbound categoria=spam)
+api-1  | 2026-09-14 04:34:18,648 | INFO | app.services.pipeline | Skipping auto-response due to handoff lock in conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:18,648 | INFO | app.services.pipeline | Pipeline complete: {'lead_id': '19881d16-33a6-4381-8cad-44bab71b08af', 'message_id': '19881d16-33a6-4381-8cad-44bab71b08af', 'session_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'conversation_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'order_id': None, 'tipo': 'spam', 'extraido': {'nombre': None, 'telefono': None, 'cantidad': None, 'ciudad': None}, 'respuesta_enviada': False, 'respuesta': None}
+api-1  | 2026-09-14 04:34:18,649 | INFO | app.services.message_buffer | Flushed buffer facebook:28632746049654895 with 1 event(s)
+api-1  | 2026-09-14 04:34:39,367 | INFO | app.services.meta_webhook | Parsed 1 messages from webhook payload
+api-1  | 2026-09-14 04:34:39,367 | INFO | app.services.message_buffer | Buffered event m_88EFsgMm1MpFKSZC8E6muwJ9y4GET9BQSmbp0iuoEUQqSSI59YhaYcpIUis9rZ6LlLF9zXW0cfhacXKTpTNkTw in facebook:28632746049654895 (1/5)
+api-1  | 2026-09-14 04:34:39,367 | INFO | app.routes.webhook | Buffered inbound event: m_88EFsgMm1MpFKSZC8E6muwJ9y4GET9BQSmbp0iuoEUQqSSI59YhaYcpIUis9rZ6LlLF9zXW0cfhacXKTpTNkTw
+api-1  | INFO:     172.26.0.1:57132 - "POST /webhook/meta HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:34:40,868 | INFO | app.services.message_buffer | Flushing buffer facebook:28632746049654895 (reason=inactivity_window, events=1)
+api-1  | 2026-09-14 04:34:40,868 | INFO | app.services.pipeline | Processing message from 28632746049654895 [facebook]: prueba cliente 2
+api-1  | 2026-09-14 04:34:40,868 | INFO | app.services.session_manager | Getting or creating session for sender=28632746049654895 platform=facebook
+api-1  | 2026-09-14 04:34:40,876 | INFO | app.services.session_manager | Active conversation found: d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:40,878 | INFO | app.services.classifier | No local order-intent match, calling OpenAI for intent disambiguation
+api-1  | 2026-09-14 04:34:41,729 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:41,730 | INFO | app.services.classifier | No rule match, calling OpenAI (gpt-4o-mini) for classification
+api-1  | 2026-09-14 04:34:42,439 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:42,441 | INFO | app.services.classifier | OpenAI classification: saludo
+api-1  | 2026-09-14 04:34:42,441 | INFO | app.services.extractor | Extracting data from text (len=16)
+api-1  | 2026-09-14 04:34:42,441 | INFO | app.services.extractor | Extraction result: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:34:43,242 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:34:43,254 | INFO | app.services.extractor | OpenAI extraction merged: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:34:43,254 | INFO | app.services.session_manager | Merging extracted data into conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:43,259 | INFO | app.services.session_manager | Merged session data: nombre=None telefono=None cantidad=None ciudad=None (source=respuesta)
+api-1  | 2026-09-14 04:34:43,260 | INFO | app.services.session_manager | Message saved: 97fd4017-3313-4cc0-a7eb-3d5c724cdbef (direction=inbound categoria=saludo)
+api-1  | 2026-09-14 04:34:43,260 | INFO | app.services.pipeline | Skipping auto-response due to handoff lock in conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:34:43,260 | INFO | app.services.pipeline | Pipeline complete: {'lead_id': '97fd4017-3313-4cc0-a7eb-3d5c724cdbef', 'message_id': '97fd4017-3313-4cc0-a7eb-3d5c724cdbef', 'session_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'conversation_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'order_id': None, 'tipo': 'saludo', 'extraido': {'nombre': None, 'telefono': None, 'cantidad': None, 'ciudad': None}, 'respuesta_enviada': False, 'respuesta': None}
+api-1  | 2026-09-14 04:34:43,261 | INFO | app.services.message_buffer | Flushed buffer facebook:28632746049654895 with 1 event(s)
+api-1  | 2026-09-14 04:37:02,508 | INFO | app.services.meta_webhook | Parsed 1 messages from webhook payload
+api-1  | 2026-09-14 04:37:02,509 | INFO | app.services.message_buffer | Buffered event m_tvndWXL2-rChK2OMCmCeCAJ9y4GET9BQSmbp0iuoEUS92OBdmNcjEttKc92gjtPpSIQG5zdZv2HeGxN3ymqjIw in facebook:28632746049654895 (1/5)
+api-1  | 2026-09-14 04:37:02,509 | INFO | app.routes.webhook | Buffered inbound event: m_tvndWXL2-rChK2OMCmCeCAJ9y4GET9BQSmbp0iuoEUS92OBdmNcjEttKc92gjtPpSIQG5zdZv2HeGxN3ymqjIw
+api-1  | INFO:     172.26.0.1:37298 - "POST /webhook/meta HTTP/1.1" 200 OK
+api-1  | 2026-09-14 04:37:04,009 | INFO | app.services.message_buffer | Flushing buffer facebook:28632746049654895 (reason=inactivity_window, events=1)
+api-1  | 2026-09-14 04:37:04,010 | INFO | app.services.pipeline | Processing message from 28632746049654895 [facebook]: hola
+api-1  | 2026-09-14 04:37:04,010 | INFO | app.services.session_manager | Getting or creating session for sender=28632746049654895 platform=facebook
+api-1  | 2026-09-14 04:37:04,017 | INFO | app.services.session_manager | Active conversation found: d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:37:04,021 | INFO | app.services.classifier | No local order-intent match, calling OpenAI for intent disambiguation
+api-1  | 2026-09-14 04:37:04,718 | INFO | httpx | HTTP Request: POST https://api.openai.com/v1/chat/completions "HTTP/1.1 200 OK"
+api-1  | 2026-09-14 04:37:04,721 | INFO | app.services.classifier | Rule match: saludo (keyword=hola)
+api-1  | 2026-09-14 04:37:04,721 | INFO | app.services.extractor | Extracting data from text (len=4)
+api-1  | 2026-09-14 04:37:04,721 | INFO | app.services.extractor | Extraction result: nombre=None telefono=None cantidad=None ciudad=None
+api-1  | 2026-09-14 04:37:04,725 | INFO | app.services.session_manager | Message saved: 776be318-e7c8-4892-8071-f968b9ae27c8 (direction=inbound categoria=saludo)
+api-1  | 2026-09-14 04:37:04,725 | INFO | app.services.pipeline | Skipping auto-response due to handoff lock in conversation d2e0ce25-4561-40c1-a850-19d350be8492
+api-1  | 2026-09-14 04:37:04,725 | INFO | app.services.pipeline | Pipeline complete: {'lead_id': '776be318-e7c8-4892-8071-f968b9ae27c8', 'message_id': '776be318-e7c8-4892-8071-f968b9ae27c8', 'session_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'conversation_id': 'd2e0ce25-4561-40c1-a850-19d350be8492', 'order_id': None, 'tipo': 'saludo', 'extraido': {'nombre': None, 'telefono': None, 'cantidad': None, 'ciudad': None}, 'respuesta_enviada': False, 'respuesta': None}
+api-1  | 2026-09-14 04:37:04,726 | INFO | app.services.message_buffer | Flushed buffer facebook:28632746049654895 with 1 event(s)

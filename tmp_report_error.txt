@@ -1,0 +1,7 @@
+﻿Invoke-WebRequest : No es posible conectar con el servidor remoto
+En línea: 1 Carácter: 15
++ ... y { $resp = Invoke-WebRequest -Method GET -Uri "http://localhost:8000 ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : InvalidOperation: (System.Net.HttpWebRequest:HttpWebRequest) [Invoke-WebRequest], WebException
+    + FullyQualifiedErrorId : WebCmdletWebResponseException,Microsoft.PowerShell.Commands.InvokeWebRequestCommand
+ 
