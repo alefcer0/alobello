@@ -3,6 +3,8 @@ HANDOFF_STATE_HUMAN_LOCKED = "human_locked"
 
 HANDOFF_SOURCE_MANUAL = "manual"
 HANDOFF_SOURCE_AUTO = "auto_detected"
+HANDOFF_SOURCE_REQUESTED = "requested_by_user"
+HANDOFF_SOURCE_NEEDS_REVIEW = "needs_human_review"
 
 ACTIVE_HANDOFF_STATES: tuple[str, ...] = (
     HANDOFF_STATE_HUMAN_LOCKED,

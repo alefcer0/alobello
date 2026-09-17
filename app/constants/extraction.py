@@ -41,6 +41,17 @@ CIUDADES_MX = [
     "san luis potosí", "zacatecas", "durango", "colima", "campeche", "chetumal",
     "tepic", "la paz", "irapuato", "celaya", "pachuca", "tlaxcala", "cuautla",
     "cuautitlán", "ecatepec", "naucalpan", "nezahualcóyotl", "toluca de lerdo",
+    # Morelos y zona centro (variantes con/sin acento)
+    "jiutepec", "temixco", "jojutla", "yautepec", "xochitepec", "zacatepec",
+    "tlaltizapán", "tlaltizapan", "ayala", "cuernavaca morelos", "cuautla morelos",
+    # CDMX y EdoMex ampliado
+    "iztapalapa", "coyoacán", "coyoacan", "gustavo a madero", "alvaro obregón", "alvaro obregon",
+    "tultitlán", "tultitlan", "chimalhuacán", "chimalhuacan", "atizapán", "atizapan",
+    "texcoco", "chalco", "valle de chalco", "metepec", "zinacantepec",
+    # Puebla, Guerrero y Tlaxcala ampliado
+    "tehuacán", "tehuacan", "san martin texmelucan", "atlixco", "teziutlán", "teziutlan",
+    "chilpancingo", "acapulco", "iguala", "taxco", "tlapa", "apizaco", "huamantla",
+    "san pablo del monte",
 ]
 
 CIUDAD_PATTERN = re.compile(

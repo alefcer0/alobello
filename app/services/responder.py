@@ -39,6 +39,7 @@ from app.constants.responses import (
     GREETING_WITH_HISTORY_TEMPLATE,
     GREETING_WITH_NAME_TEMPLATE,
     HUMAN_CONTACT_BRIDGE_RESPONSE,
+    HUMAN_CONTACT_CONFIRMED_RESPONSE,
     HUMAN_JOIN_AND,
     HUMAN_JOIN_SEPARATOR,
     INTERACTION_CLOSE_RESPONSE,
@@ -53,6 +54,8 @@ from app.constants.responses import (
     ORDER_CONFIRMATION_PROMPT_WITH_SUMMARY,
     READY_RESPONSE,
     REPEATED_GREETING_RESPONSE,
+    TECHNOLOGY_NEUTRAL_RESPONSE,
+    TOPIC_CHANGE_SIMPLIFIED_RESPONSE,
 )
 from app.constants.webhook import MESSAGE_TYPE_TEXT, MESSAGING_PRODUCT_WHATSAPP
 from app.models.lead import ExtractResponse, RespondResponse
@@ -110,6 +113,18 @@ def build_repeated_greeting_message() -> str:
 
 def build_human_contact_bridge_message() -> str:
     return HUMAN_CONTACT_BRIDGE_RESPONSE
+
+
+def build_human_contact_confirmed_message() -> str:
+    return HUMAN_CONTACT_CONFIRMED_RESPONSE
+
+
+def build_technology_neutral_message() -> str:
+    return TECHNOLOGY_NEUTRAL_RESPONSE
+
+
+def build_topic_change_simplified_message() -> str:
+    return TOPIC_CHANGE_SIMPLIFIED_RESPONSE
 
 
 def _human_join(items: list[str]) -> str:

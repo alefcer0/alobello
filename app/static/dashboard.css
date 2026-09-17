@@ -172,6 +172,45 @@ button[disabled] {
   min-height: 42px;
 }
 
+.exports-strip {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.exports-copy h3 {
+  margin: 0;
+}
+
+.exports-copy p {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.exports-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.download-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  text-align: center;
+  font-size: 0.88rem;
+}
+
 .filter-item input,
 .filter-item select,
 .filter-item button {
@@ -205,11 +244,22 @@ button[disabled] {
   font-size: 1.5rem;
 }
 
+.report-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(320px, 1fr);
+  gap: 0.8rem;
+  align-items: start;
+}
+
 .table-wrap {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.8rem;
+}
+
+.sessions-pane {
+  min-width: 0;
 }
 
 .table-head {
@@ -278,21 +328,28 @@ th {
 }
 
 .details-panel {
-  margin-top: 0.8rem;
+  margin-top: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: #fcfdfb;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
 }
 
-.details-panel summary {
-  cursor: pointer;
+.details-header {
   padding: 0.8rem;
-  font-weight: 600;
+  border-bottom: 1px solid var(--line);
+}
+
+.details-header h3 {
+  margin: 0;
 }
 
 .details-body {
-  border-top: 1px solid var(--line);
+  flex: 1;
   padding: 0.75rem;
+  overflow: auto;
 }
 
 #details-meta {
@@ -343,6 +400,24 @@ th {
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .exports-strip {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .exports-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .report-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .details-panel {
+    min-height: 360px;
+  }
 }
 
 @media (max-width: 620px) {
@@ -357,5 +432,16 @@ th {
 
   .stats-grid {
     grid-template-columns: 1fr;
+  }
+
+  .exports-actions {
+    display: grid;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .exports-actions button,
+  .exports-actions .download-link {
+    width: 100%;
   }
 }

@@ -79,6 +79,17 @@
       </div>
     </section>
 
+    <section class="exports-strip" aria-label="Exportes para analisis con Claude">
+      <div class="exports-copy">
+        <h3>Exportes para Claude</h3>
+        <p>Descarga conversaciones filtradas y el prompt base para analisis externo.</p>
+      </div>
+      <div class="exports-actions">
+        <button id="download-claude" type="button">Descargar conversaciones para Claude</button>
+        <a class="ghost-link download-link" href="/static/claude_prompt_mejora_bot.md" download>Descargar prompt para Claude (MD)</a>
+      </div>
+    </section>
+
     <section id="stats" class="stats-grid">
       <article class="stat-card"><p>Conversaciones</p><h2 id="total_conversations">0</h2></article>
       <article class="stat-card"><p>Ventas</p><h2 id="total_sales">0</h2></article>
@@ -87,41 +98,49 @@
       <article class="stat-card"><p>Activos</p><h2 id="total_active">0</h2></article>
     </section>
 
-    <section class="table-wrap">
-      <div class="table-head">
-        <h3>Sesiones recientes</h3>
-        <p id="report-meta">Sin datos</p>
-      </div>
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th>Detalle</th>
-              <th>Sender</th>
-              <th>Plataforma</th>
-              <th>Tema detectado</th>
-              <th>Tipo de sesion</th>
-              <th>Datos de venta</th>
-              <th>Estado de sesion</th>
-              <th>Ultimo mensaje</th>
-            </tr>
-          </thead>
-          <tbody id="report-rows"></tbody>
-        </table>
-      </div>
-      <div class="pager">
-        <button id="prev-page" type="button">Anterior</button>
-        <span id="page-label">Pagina 1</span>
-        <button id="next-page" type="button">Siguiente</button>
-      </div>
+    <section class="report-workspace">
+      <section class="table-wrap sessions-pane">
+        <div class="table-head">
+          <h3>Sesiones recientes</h3>
+          <p id="report-meta">Sin datos</p>
+        </div>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th>Detalle</th>
+                <th>Sender</th>
+                <th>Plataforma</th>
+                <th>Tema detectado</th>
+                <th>Tipo de sesion</th>
+                <th>Datos de venta</th>
+                <th>Estado de sesion</th>
+                <th>Ultimo mensaje</th>
+              </tr>
+            </thead>
+            <tbody id="report-rows"></tbody>
+          </table>
+        </div>
+        <div class="pager">
+          <button id="prev-page" type="button">Anterior</button>
+          <span id="page-label">Pagina 1</span>
+          <button id="next-page" type="button">Siguiente</button>
+        </div>
+      </section>
 
-      <details id="conversation-details" class="details-panel">
-        <summary>Interacciones de la conversacion seleccionada</summary>
+      <section id="conversation-details" class="details-panel" aria-live="polite">
+        <div class="details-header">
+          <h3>Conversacion seleccionada</h3>
+          <p class="subtitle">Vista tipo bandeja: lista a la izquierda y detalle a la derecha.</p>
+        </div>
         <div class="details-body">
           <p id="details-meta" class="subtitle">Selecciona una conversacion para ver mensajes.</p>
           <ul id="interaction-list" class="interaction-list"></ul>
         </div>
-      </details>
+      </section>
+    </section>
+
+    <section class="dashboard-feedback">
       <p id="dashboard-error" class="error" role="alert" aria-live="polite"></p>
     </section>
   </main>

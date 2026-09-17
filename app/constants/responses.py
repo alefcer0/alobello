@@ -10,6 +10,11 @@ HUMAN_CONTACT_BRIDGE_RESPONSE = (
     "En lo que te contacta una persona, te puedo ayudar yo, Alobot 🌵🤖, asistente virtual. "
     "Cuéntame qué necesitas y con gusto te apoyo."
 )
+HUMAN_CONTACT_CONFIRMED_RESPONSE = (
+    "Perfecto, ya tenemos tus datos. Le avisamos a una persona del equipo para que te contacte directo."
+)
+TECHNOLOGY_NEUTRAL_RESPONSE = "Soy Alobot 🌵🤖, el asistente virtual de esta pagina. ¿En que te puedo ayudar?"
+TOPIC_CHANGE_SIMPLIFIED_RESPONSE = "Cuentame en que te puedo ayudar 😊"
 
 GREETING_WITH_HISTORY_TEMPLATE = (
     "¡Hola {name}! Soy Alobot 🌵🤖. "

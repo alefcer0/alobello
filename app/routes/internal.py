@@ -1,8 +1,10 @@
 import logging
+from datetime import UTC
 from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi.responses import JSONResponse
 
 from app.constants.routes import (
     AUTH_LOGIN_PATH,
@@ -11,12 +13,14 @@ from app.constants.routes import (
     HANDOFF_PATH,
     INTERNAL_TAG,
     LOG_GET_REPORT_LEADS,
+    LOG_GET_REPORT_LEADS_EXPORT_CLAUDE,
     LOG_POST_AUTH_LOGIN_TEMPLATE,
     LOG_POST_CLASSIFY,
     LOG_POST_EXTRACT,
     LOG_POST_HANDOFF_TEMPLATE,
     LOG_POST_RESPOND_TEMPLATE,
     LOG_POST_SESSION_TEMPLATE,
+    REPORT_LEADS_EXPORT_CLAUDE_PATH,
     REPORT_LEADS_PATH,
     RESPOND_PATH,
     SESSION_PATH,
@@ -42,6 +46,55 @@ from app.services.session_manager import get_or_create_session, set_handoff_stat
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
+
+
+def _claude_export_payload(report: LeadsReportResponse) -> dict:
+    conversations = []
+    for item in report.results:
+        conversations.append(
+            {
+                "conversation_id": str(item.conversation_id),
+                "sender_id": item.sender_id,
+                "plataforma": item.plataforma,
+                "lead_outcome": item.lead_outcome,
+                "is_nopal_sale": item.is_nopal_sale,
+                "sale_data_status": item.sale_data_status,
+                "missing_sale_fields": item.missing_sale_fields,
+                "contacto": {
+                    "nombre": item.nombre,
+                    "telefono": item.telefono,
+                },
+                "topic": {
+                    "last_intent_category": item.last_intent_category,
+                    "last_detected_topic": item.last_detected_topic,
+                },
+                "flow": {
+                    "clarification_attempts": item.clarification_attempts,
+                    "topic_change_count": item.topic_change_count,
+                    "interaction_closed": item.interaction_closed,
+                },
+                "messages": [
+                    {
+                        "created_at": interaction.created_at.isoformat(),
+                        "direction": interaction.direction,
+                        "categoria": interaction.categoria,
+                        "intent_category": interaction.intent_category,
+                        "detected_topic": interaction.detected_topic,
+                        "classified_by_openai": interaction.classified_by_openai,
+                        "texto": interaction.texto,
+                    }
+                    for interaction in item.interactions
+                ],
+            }
+        )
+
+    return {
+        "purpose": "Analisis externo en Claude para mejorar comportamiento del bot",
+        "generated_at": datetime.now(UTC).isoformat(),
+        "filters": report.filters.model_dump(mode="json"),
+        "summary": report.summary.model_dump(mode="json"),
+        "conversations": conversations,
+    }
 
 
 @router.post(
@@ -292,3 +345,107 @@ async def leads_report_endpoint(
         )
     except ValueError as exc:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
+@router.get(
+    REPORT_LEADS_EXPORT_CLAUDE_PATH,
+    tags=["Reportes"],
+    summary="Descargar conversaciones filtradas para analisis en Claude",
+    description=(
+        "Funcionalidad:\n"
+        "Genera un archivo JSON descargable con conversaciones filtradas y mensajes para analisis en Claude.\n\n"
+        "Funcionamiento:\n"
+        "- Requiere JWT Bearer valido.\n"
+        "- Reutiliza las mismas reglas de filtrado del reporte principal.\n"
+        "- Incluye interacciones por conversacion para inspeccion de comportamiento."
+    ),
+)
+async def leads_report_export_claude_endpoint(
+    from_date: Optional[datetime] = Query(default=None, description="Inicio del rango (ISO 8601)."),
+    to_date: Optional[datetime] = Query(default=None, description="Fin del rango (ISO 8601)."),
+    plataforma: Optional[str] = Query(default=None, description="Canal: facebook o whatsapp."),
+    sender_id: Optional[str] = Query(default=None, description="Filtra por sender_id exacto."),
+    sender: Optional[str] = Query(
+        default=None,
+        description="Filtra por coincidencia parcial de sender_id.",
+    ),
+    topic: Optional[str] = Query(
+        default=None,
+        description="Filtra por coincidencia parcial en tema detectado.",
+    ),
+    search: Optional[str] = Query(
+        default=None,
+        description="Busqueda libre en sender_id, nombre, telefono, ciudad o tema detectado.",
+    ),
+    order_status: Optional[str] = Query(
+        default=None,
+        description="Estado de orden: draft, collecting, ready_to_confirm, confirmed, cancelled, closed, none.",
+    ),
+    categoria: Optional[str] = Query(
+        default=None,
+        description="Categoria de mensajes: lead, proveedor, saludo, consulta, spam, auto_reply, human_reply.",
+    ),
+    handoff_state: Optional[str] = Query(
+        default=None,
+        description="Estado de handoff: auto o human_locked.",
+    ),
+    only_nopal_sales: bool = Query(
+        default=False,
+        description="Si true, retorna solo sesiones asociadas a venta de nopal.",
+    ),
+    sale_data_status: Optional[str] = Query(
+        default=None,
+        description="Estado de datos para venta: completos, faltantes o no_aplica.",
+    ),
+    lead_outcome: str = Query(
+        default="all",
+        description="Resultado comercial: all, sale, fallen, discarded, active, unknown.",
+    ),
+    max_interactions: int = Query(
+        default=80,
+        ge=1,
+        le=300,
+        description="Maximo de interacciones por conversacion incluidas en el archivo.",
+    ),
+    max_conversations: int = Query(
+        default=500,
+        ge=1,
+        le=2000,
+        description="Maximo de conversaciones incluidas en el archivo.",
+    ),
+    _: AuthenticatedUser = Depends(get_current_user),
+):
+    logger.info(LOG_GET_REPORT_LEADS_EXPORT_CLAUDE)
+    try:
+        report = await build_leads_report(
+            from_date=from_date,
+            to_date=to_date,
+            plataforma=plataforma,
+            sender_id=sender_id,
+            sender=sender,
+            topic=topic,
+            search=search,
+            order_status=order_status,
+            categoria=categoria,
+            handoff_state=handoff_state,
+            only_nopal_sales=only_nopal_sales,
+            sale_data_status=sale_data_status,
+            lead_outcome=lead_outcome,
+            include_interactions=True,
+            max_interactions=max_interactions,
+            limit=max_conversations,
+            offset=0,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+    payload = _claude_export_payload(report)
+    now_tag = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"conversaciones_claude_{now_tag}.json"
+    return JSONResponse(
+        content=payload,
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Cache-Control": "no-store",
+        },
+    )

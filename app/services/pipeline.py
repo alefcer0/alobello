@@ -47,10 +47,13 @@ from app.services.responder import (
     build_general_topic_response,
     build_greeting_message,
     build_human_contact_bridge_message,
+    build_human_contact_confirmed_message,
     build_interaction_close_message,
     build_order_change_message,
     build_order_confirmation_prompt,
     build_repeated_greeting_message,
+    build_technology_neutral_message,
+    build_topic_change_simplified_message,
     generate_and_send_response,
 )
 from app.services.session_manager import (
@@ -67,6 +70,8 @@ from app.services.session_manager import (
     is_bot_handoff_locked,
     merge_contact_data,
     merge_extracted_data,
+    mark_handoff_requested,
+    mark_needs_human_review,
     reset_clarification_attempts,
     save_message,
     track_topic_change,
@@ -83,10 +88,28 @@ _HUMAN_LOOKUP_REGEX = re.compile(
     r".*\b(?:dueñ[oa]|persona|humano|encargad[oa]|admin|administrador)\b",
     re.IGNORECASE,
 )
+_HUMAN_REQUEST_REGEX = re.compile(
+    r"\b(?:hablar|contactar(?:me)?|comunicar(?:me)?|pasame|pásame|quiero\s+hablar)\b"
+    r".*\b(?:encargad[oa]|dueñ[oa]|persona|humano|alguien|responsable|gerente|jefe|admin|administrador)\b|"
+    r"\bquiero\s+hablar\s+con\b",
+    re.IGNORECASE,
+)
+_TECH_QUESTION_REGEX = re.compile(
+    r"\bchatgpt\b|\bopenai\b|\binteligencia\s+artificial\b|\bia\b|\brobot\b|\bgpt\b|\bclaude\b|\bgemini\b",
+    re.IGNORECASE,
+)
+_TECH_QUESTION_SIGNAL_REGEX = re.compile(
+    r"\?|\bdetr[aá]s\b|\busan\b|\busa\b|\butilizan\b|\butiliza\b|\bes\b|\beres\b",
+    re.IGNORECASE,
+)
 _NON_NAME_TOKENS = {
     "ok",
     "hola",
     "gracias",
+    "maldito",
+    "maldita",
+    "malditos",
+    "malditas",
     "si",
     "sí",
     "no",
@@ -97,6 +120,8 @@ _NON_NAME_TOKENS = {
     "bien",
 }
 _LEAD_TOPIC_HINTS = ("nopal", "nopales", "kilo", "kilos", "kg")
+_INTENT_HANDOFF_REQUEST = "handoff_request"
+_INTENT_TECH_QUESTION = "tech_question"
 
 
 def _norm(value: str | None) -> str:
@@ -202,6 +227,17 @@ def _inferred_fragment_fields(text: str) -> set[str]:
 
 def _is_human_lookup_text(text: str) -> bool:
     return bool(_HUMAN_LOOKUP_REGEX.search(text or ""))
+
+
+def _is_handoff_request_text(text: str) -> bool:
+    return bool(_HUMAN_REQUEST_REGEX.search(text or ""))
+
+
+def _is_technology_question_text(text: str) -> bool:
+    content = text or ""
+    if not _TECH_QUESTION_REGEX.search(content):
+        return False
+    return bool(_TECH_QUESTION_SIGNAL_REGEX.search(content))
 
 
 def _is_context_data_fragment(
@@ -347,6 +383,17 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         category = rule_category
         category_classified_by_openai = False
 
+    special_intent: str | None = None
+    if _is_handoff_request_text(msg.text):
+        special_intent = _INTENT_HANDOFF_REQUEST
+        category = CATEGORY_CONSULTA if category == CATEGORY_SPAM else category
+        category_classified_by_openai = False
+        await mark_handoff_requested(session.id)
+    elif category != CATEGORY_SPAM and _is_technology_question_text(msg.text):
+        special_intent = _INTENT_TECH_QUESTION
+        category = CATEGORY_CONSULTA if category == CATEGORY_SPAM else category
+        category_classified_by_openai = False
+
     missing_before = get_missing_fields(current_data)
     extracted = extract_data(msg.text)
     is_context_fragment = _is_context_data_fragment(
@@ -356,7 +403,7 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         current_topic=flow_state.current_topic,
         is_first=is_first,
         clarification_attempts=flow_state.clarification_attempts,
-    )
+    ) if special_intent is None else False
     if is_context_fragment:
         if not extracted.nombre and "nombre" in missing_before and _looks_like_name_fragment(msg.text):
             extracted.nombre = _title_case_fragment(msg.text)
@@ -369,17 +416,23 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
             category = CATEGORY_CONSULTA
         category_classified_by_openai = False
 
-    should_analyze_with_openai = category != CATEGORY_SPAM and not is_context_fragment
+    should_analyze_with_openai = category != CATEGORY_SPAM and not is_context_fragment and special_intent is None
     should_merge_into_order = category == CATEGORY_LEAD
     should_merge_contact_only = category not in {CATEGORY_SPAM, CATEGORY_LEAD}
     previous_data = current_data if category == CATEGORY_LEAD else None
     topic = flow_state.current_topic if is_context_fragment else None
+    if special_intent == _INTENT_HANDOFF_REQUEST:
+        topic = "contacto humano"
+    elif special_intent == _INTENT_TECH_QUESTION:
+        topic = "consulta sobre alobot"
 
     if should_analyze_with_openai:
         extracted = await extract_data_with_openai(msg.text, extracted)
         topic = await infer_topic_with_openai(msg.text, category)
     topic = topic or _fallback_topic(category)
-    _, topic_limit_exceeded = await track_topic_change(session.id, topic)
+    topic_change_count, topic_limit_exceeded = await track_topic_change(session.id, topic)
+    if topic_change_count >= 3:
+        await mark_needs_human_review(session.id)
 
     if should_merge_into_order:
         merged = await merge_extracted_data(session.id, extracted, is_first)
@@ -411,7 +464,7 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         direction=DIRECTION_INBOUND,
         texto=msg.text,
         categoria=category,
-        intent_category=category,
+        intent_category=special_intent or category,
         detected_topic=topic,
         external_message_id=msg.event_id,
         order_id=order_id,
@@ -430,7 +483,7 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         no_rule_match=no_rule_match,
         topic=topic,
         text=msg.text,
-    ) and not is_typical_first_greeting and not is_context_fragment and not is_human_lookup_greeting
+    ) and not is_typical_first_greeting and not is_context_fragment and not is_human_lookup_greeting and special_intent is None
 
     should_send_followup = category != CATEGORY_SPAM
     if category == CATEGORY_SPAM:
@@ -448,9 +501,41 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         )
         response_sent = resp.enviado
         response_message = resp.mensaje
+    elif special_intent == _INTENT_HANDOFF_REQUEST:
+        await reset_clarification_attempts(session.id)
+        if merged.telefono:
+            reply_text = build_human_contact_confirmed_message()
+        else:
+            reply_text = build_human_contact_bridge_message()
+        resp = await generate_and_send_response(
+            sender_id=msg.sender_id,
+            plataforma=msg.plataforma,
+            texto_override=reply_text,
+        )
+        response_sent = resp.enviado
+        response_message = resp.mensaje
+    elif special_intent == _INTENT_TECH_QUESTION:
+        await reset_clarification_attempts(session.id)
+        resp = await generate_and_send_response(
+            sender_id=msg.sender_id,
+            plataforma=msg.plataforma,
+            texto_override=build_technology_neutral_message(),
+        )
+        response_sent = resp.enviado
+        response_message = resp.mensaje
     elif needs_clarification:
         flow_state = await get_conversation_flow_state(session.id)
-        if flow_state.clarification_attempts >= max(settings.max_clarification_attempts - 1, 0):
+        if flow_state.topic_change_count >= 2:
+            if flow_state.topic_change_count >= 3:
+                await mark_needs_human_review(session.id)
+            resp = await generate_and_send_response(
+                sender_id=msg.sender_id,
+                plataforma=msg.plataforma,
+                texto_override=build_topic_change_simplified_message(),
+            )
+            response_sent = resp.enviado
+            response_message = resp.mensaje
+        elif flow_state.clarification_attempts >= max(settings.max_clarification_attempts - 1, 0):
             response_message = build_interaction_close_message()
             await close_interaction(session.id)
             resp = await generate_and_send_response(
@@ -495,6 +580,7 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
         response_message = resp.mensaje
     elif category == CATEGORY_LEAD:
         await reset_clarification_attempts(session.id)
+        missing_lead_fields = get_missing_fields(merged)
         if lead_changed_fields:
             lead_message = build_order_change_message(lead_changed_fields, merged)
             resp = await generate_and_send_response(
@@ -502,7 +588,7 @@ async def process_incoming_message(msg: IncomingMessage) -> dict:
                 plataforma=msg.plataforma,
                 texto_override=lead_message,
             )
-        elif active_order_status == ORDER_STATUS_READY_TO_CONFIRM:
+        elif active_order_status == ORDER_STATUS_READY_TO_CONFIRM and not missing_lead_fields:
             confirmation_prompt = build_order_confirmation_prompt(merged)
             resp = await generate_and_send_response(
                 sender_id=msg.sender_id,

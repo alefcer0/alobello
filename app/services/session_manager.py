@@ -32,11 +32,14 @@ from app.constants.common import (
     PRODUCT_NAME_NOPAL,
 )
 from app.constants.handoff import (
+    HANDOFF_SOURCE_NEEDS_REVIEW,
     HANDOFF_SOURCE_AUTO,
     HANDOFF_SOURCE_MANUAL,
+    HANDOFF_SOURCE_REQUESTED,
     HANDOFF_STATE_AUTO,
     HANDOFF_STATE_HUMAN_LOCKED,
 )
+from app.constants.classification import NEGATIVE_KEYWORDS
 from app.constants.handoff_runtime import (
     LOG_HANDOFF_AUTO_EXPIRED_TEMPLATE,
     LOG_HANDOFF_LOCK_TEMPLATE,
@@ -94,6 +97,35 @@ def _contains_intent_phrase(text: str, keywords: tuple[str, ...]) -> bool:
         if re.search(rf"\b{re.escape(token)}\b", text):
             return True
     return False
+
+
+def _contains_negative_keyword(text: str) -> bool:
+    normalized = _normalize_text(text)
+    if not normalized:
+        return False
+
+    for keyword in NEGATIVE_KEYWORDS:
+        token = keyword.strip().lower()
+        if not token:
+            continue
+        if " " in token:
+            if token in normalized:
+                return True
+            continue
+        if re.search(rf"\b{re.escape(token)}\b", normalized):
+            return True
+    return False
+
+
+def _sanitize_contact_name(name: Optional[str]) -> Optional[str]:
+    if not name:
+        return None
+    cleaned = re.sub(WHITESPACE_REGEX, " ", name).strip(" .,!?")
+    if len(cleaned) < 2:
+        return None
+    if _contains_negative_keyword(cleaned):
+        return None
+    return cleaned
 
 
 def _idle_expiry_cutoff() -> datetime:
@@ -540,6 +572,42 @@ async def mark_human_intervention(sender_id: str, plataforma: str) -> Optional[U
     return conversation_id
 
 
+async def mark_handoff_requested(session_id: UUID) -> None:
+    async with get_connection() as conn:
+        await _ensure_handoff_schema(conn)
+        await conn.execute(
+            """
+            UPDATE conversations
+            SET handoff_source = $2,
+                last_message_at = NOW()
+            WHERE id = $1
+              AND COALESCE(handoff_state, $3) <> $4
+            """,
+            session_id,
+            HANDOFF_SOURCE_REQUESTED,
+            HANDOFF_STATE_AUTO,
+            HANDOFF_STATE_HUMAN_LOCKED,
+        )
+
+
+async def mark_needs_human_review(session_id: UUID) -> None:
+    async with get_connection() as conn:
+        await _ensure_handoff_schema(conn)
+        await conn.execute(
+            """
+            UPDATE conversations
+            SET handoff_source = $2,
+                last_message_at = NOW()
+            WHERE id = $1
+              AND COALESCE(handoff_state, $3) <> $4
+            """,
+            session_id,
+            HANDOFF_SOURCE_NEEDS_REVIEW,
+            HANDOFF_STATE_AUTO,
+            HANDOFF_STATE_HUMAN_LOCKED,
+        )
+
+
 async def set_handoff_state(
     sender_id: str,
     plataforma: str,
@@ -728,12 +796,13 @@ async def merge_extracted_data(
             order_id = await _create_draft_order(conn, session_id, row["contact_id"])
 
         existing_cantidad = row["cantidad"] or _format_item_quantity(row["item_quantity"], row["item_unit"])
-        nombre = extracted.nombre or row["contact_name"]
+        safe_name = _sanitize_contact_name(extracted.nombre)
+        nombre = safe_name or row["contact_name"]
         telefono = extracted.telefono or row["order_phone"] or row["contact_phone"]
         cantidad = extracted.cantidad or existing_cantidad
         ciudad = extracted.ciudad or row["ciudad"]
 
-        if extracted.nombre and extracted.nombre != row["contact_name"]:
+        if safe_name and safe_name != row["contact_name"]:
             await conn.execute(
                 """
                 UPDATE contacts
@@ -741,7 +810,7 @@ async def merge_extracted_data(
                 WHERE id = $1
                 """,
                 row["contact_id"],
-                extracted.nombre,
+                safe_name,
             )
 
         if extracted.telefono and extracted.telefono != row["contact_phone"]:
@@ -838,7 +907,9 @@ async def merge_contact_data(
         if not row:
             return extracted
 
-        if extracted.nombre and extracted.nombre != row["contact_name"]:
+        safe_name = _sanitize_contact_name(extracted.nombre)
+
+        if safe_name and safe_name != row["contact_name"]:
             await conn.execute(
                 """
                 UPDATE contacts
@@ -846,7 +917,7 @@ async def merge_contact_data(
                 WHERE id = $1
                 """,
                 row["contact_id"],
-                extracted.nombre,
+                safe_name,
             )
 
         if extracted.telefono and extracted.telefono != row["contact_phone"]:
@@ -866,7 +937,7 @@ async def merge_contact_data(
         )
 
         return ExtractResponse(
-            nombre=extracted.nombre or row["contact_name"],
+            nombre=safe_name or row["contact_name"],
             telefono=extracted.telefono or row["contact_phone"],
             cantidad=row["cantidad"] or _format_item_quantity(row["item_quantity"], row["item_unit"]),
             ciudad=extracted.ciudad or row["ciudad"],
@@ -1042,7 +1113,8 @@ async def upsert_order_for_lead(
             row["contact_id"],
         )
 
-        resolved_nombre = nombre or row["contact_name"]
+        safe_name = _sanitize_contact_name(nombre)
+        resolved_nombre = safe_name or row["contact_name"]
         resolved_telefono = telefono or row["order_phone"] or row["contact_phone"]
         resolved_cantidad = (
             cantidad
@@ -1060,7 +1132,7 @@ async def upsert_order_for_lead(
         )
         order_status = ORDER_STATUS_READY_TO_CONFIRM if not missing else ORDER_STATUS_COLLECTING
 
-        if nombre:
+        if safe_name:
             await conn.execute(
                 """
                 UPDATE contacts
@@ -1068,7 +1140,7 @@ async def upsert_order_for_lead(
                 WHERE id = $1
                 """,
                 row["contact_id"],
-                nombre,
+                safe_name,
             )
 
         if telefono:

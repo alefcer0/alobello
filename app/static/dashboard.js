@@ -219,14 +219,12 @@
   }
 
   function renderInteractions(conversation, interactions) {
-    const details = document.getElementById("conversation-details");
     const meta = document.getElementById("details-meta");
     const list = document.getElementById("interaction-list");
     list.innerHTML = "";
 
     if (!conversation) {
       meta.textContent = "Selecciona una conversacion para ver mensajes.";
-      details.open = false;
       return;
     }
 
@@ -246,7 +244,6 @@
       li.className = "interaction-item";
       li.textContent = "No hay interacciones para esta conversacion con los filtros actuales.";
       list.appendChild(li);
-      details.open = true;
       return;
     }
 
@@ -269,7 +266,6 @@
         "<div class='interaction-text'>" + safe(it.texto || "(sin texto)") + "</div>";
       list.appendChild(li);
     });
-    details.open = true;
   }
 
   function updatePager() {
@@ -316,11 +312,8 @@
     });
   }
 
-  function buildQuery(includeInteractions) {
+  function buildFilterParams() {
     const params = new URLSearchParams();
-    params.set("limit", String(state.limit));
-    params.set("offset", String(state.offset));
-    params.set("include_interactions", includeInteractions ? "true" : "false");
 
     const fromDate = fromLocalToUtcIso(document.getElementById("from_date").value);
     const toDate = fromLocalToUtcIso(document.getElementById("to_date").value);
@@ -356,7 +349,33 @@
       params.set("lead_outcome", outcome);
     }
 
+    return params;
+  }
+
+  function buildReportQuery(includeInteractions) {
+    const params = buildFilterParams();
+    params.set("limit", String(state.limit));
+    params.set("offset", String(state.offset));
+    params.set("include_interactions", includeInteractions ? "true" : "false");
+
     return params.toString();
+  }
+
+  function buildClaudeExportQuery() {
+    const params = buildFilterParams();
+    params.set("max_conversations", "500");
+    params.set("max_interactions", "120");
+
+    return params.toString();
+  }
+
+  function parseFilenameFromDisposition(dispositionValue, fallbackName) {
+    const disposition = String(dispositionValue || "");
+    const match = disposition.match(/filename=\"?([^\";]+)\"?/i);
+    if (!match || !match[1]) {
+      return fallbackName;
+    }
+    return match[1];
   }
 
   function getConversationRow(results, conversationId) {
@@ -378,7 +397,7 @@
     }
 
     try {
-      const data = await requestJson("/reports/leads?" + buildQuery(true), {
+      const data = await requestJson("/reports/leads?" + buildReportQuery(true), {
         method: "GET",
         headers: {
           Authorization: "Bearer " + token
@@ -409,7 +428,7 @@
     }
 
     try {
-      const data = await requestJson("/reports/leads?" + buildQuery(false), {
+      const data = await requestJson("/reports/leads?" + buildReportQuery(false), {
         method: "GET",
         headers: {
           Authorization: "Bearer " + token
@@ -458,6 +477,68 @@
       state.offset = 0;
       state.page = 1;
       loadReport();
+    });
+
+    document.getElementById("download-claude").addEventListener("click", async function () {
+      const button = document.getElementById("download-claude");
+      const token = getToken();
+      const error = document.getElementById("dashboard-error");
+      error.textContent = "";
+
+      if (!token) {
+        window.location.replace("/");
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = "Generando archivo...";
+      try {
+        const response = await fetch("/reports/leads/export/claude?" + buildClaudeExportQuery(), {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer " + token
+          }
+        });
+
+        if (!response.ok) {
+          const isJson = (response.headers.get("content-type") || "").includes("application/json");
+          let message = "No se pudo generar el archivo para Claude";
+          if (isJson) {
+            const body = await response.json();
+            if (body && body.detail) {
+              message = String(body.detail);
+            }
+          }
+          const err = new Error(message);
+          err.status = response.status;
+          throw err;
+        }
+
+        const blob = await response.blob();
+        const filename = parseFilenameFromDisposition(
+          response.headers.get("content-disposition"),
+          "conversaciones_claude.json"
+        );
+
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+      } catch (err) {
+        if (err.status === 401) {
+          clearSession();
+          window.location.replace("/");
+          return;
+        }
+        error.textContent = err.message;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Descargar conversaciones para Claude";
+      }
     });
 
     document.getElementById("prev-page").addEventListener("click", function () {
